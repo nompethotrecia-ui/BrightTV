@@ -1,0 +1,135 @@
+SHOW TABLES IN workspace.default;
+
+SELECT * FROM workspace.default.bright_tv_dataset LIMIT 5;
+SELECT * FROM workspace.default.bright_tv_viewership LIMIT 5;
+
+DESCRIBE workspace.default.bright_tv_viewership;
+
+DROP TABLE workspace.default.bright_tv_viewership;
+
+CREATE OR REPLACE TEMP VIEW vw_viewership_clean AS
+SELECT 
+    COALESCE(UserID0, userid4) AS UserID,
+    COALESCE(Channel2, 'Unknown Channel') AS Channel,
+    RecordDate2 AS Start_Time,
+    
+    -- Fix duration (if it's actually duration stored as timestamp)
+    RecordDate2 + INTERVAL 1 HOUR AS End_Time
+
+FROM workspace.default.bright_tv_viewership
+WHERE COALESCE(UserID0, userid4) IS NOT NULL;
+
+CREATE OR REPLACE TEMP VIEW vw_users_clean AS
+SELECT 
+    UserID,
+    COALESCE(Age, 0) AS Age,
+    COALESCE(Gender, 'Unknown') AS Gender,
+    COALESCE(Province, 'Unknown') AS Province
+FROM workspace.default.bright_tv_dataset
+WHERE UserID IS NOT NULL;
+
+CREATE OR REPLACE TEMP VIEW vw_master AS
+SELECT 
+    u.UserID,
+    u.Age,
+    u.Gender,
+    u.Province,
+    v.Channel,
+    v.Start_Time,
+    v.End_Time
+
+FROM vw_users_clean u
+INNER JOIN vw_viewership_clean v
+    ON u.UserID = v.UserID;
+
+    CREATE OR REPLACE TEMP VIEW vw_users_clean AS
+SELECT 
+    UserID,
+    COALESCE(Age, 0) AS Age,
+    COALESCE(Gender, 'Unknown') AS Gender,
+    COALESCE(Race, 'Unknown') AS Race,
+    COALESCE(Province, 'Unknown') AS Province
+FROM workspace.default.bright_tv_dataset
+WHERE UserID IS NOT NULL;
+ 
+ CREATE OR REPLACE TEMP VIEW vw_master AS
+SELECT 
+    u.UserID,
+    u.Age,
+    u.Gender,
+    u.Race,
+    u.Province,
+    v.Channel,
+    v.Start_Time,
+    v.End_Time
+
+FROM vw_users_clean u
+INNER JOIN vw_viewership_clean v
+    ON u.UserID = v.UserID;
+
+ SELECT * FROM vw_master LIMIT 5;
+
+ ...................................................
+ VIEWERSHIP BY PROVINCE
+ ...................................................
+ SELECT Province, COUNT(*) AS Views
+FROM vw_master
+GROUP BY Province
+ORDER BY Views DESC;
+....................................................
+MOST WATCHED CHANNELS
+....................................................
+SELECT Channel, COUNT(*) AS Views
+FROM vw_master
+GROUP BY Channel
+ORDER BY Views DESC
+LIMIT 5;
+...................................................
+VIEWERSHIP BY GENDER
+...................................................
+SELECT Gender, COUNT(*) AS Views
+FROM vw_master
+GROUP BY Gender;
+...................................................
+AGE BUCKETS
+...................................................
+SELECT 
+    CASE 
+        WHEN Age < 18 THEN '0-17'
+        WHEN Age BETWEEN 18 AND 34 THEN '18-34'
+        WHEN Age BETWEEN 35 AND 54 THEN '35-54'
+        ELSE '55+'
+    END AS Age_Group,
+    COUNT(*) AS Views
+FROM vw_master
+GROUP BY Age_Group;
+...................................................
+VIEWERSHIP BY TIMESLOTS
+...................................................
+SELECT 
+    CASE 
+        WHEN HOUR(Start_Time) BETWEEN 6 AND 11 THEN 'Morning'
+        WHEN HOUR(Start_Time) BETWEEN 12 AND 17 THEN 'Afternoon'
+        WHEN HOUR(Start_Time) BETWEEN 18 AND 23 THEN 'Evening'
+        ELSE 'Night'
+    END AS Time_Slot,
+    COUNT(*) AS Total_Views
+FROM vw_master
+GROUP BY 
+    CASE 
+        WHEN HOUR(Start_Time) BETWEEN 6 AND 11 THEN 'Morning'
+        WHEN HOUR(Start_Time) BETWEEN 12 AND 17 THEN 'Afternoon'
+        WHEN HOUR(Start_Time) BETWEEN 18 AND 23 THEN 'Evening'
+        ELSE 'Night'
+    END
+ORDER BY Total_Views DESC;
+...................................................................
+MALE VIEWERSHIP SPLIT BY RACE
+..................................................................
+SELECT 
+    Race,
+    COUNT(*) AS Total_Views
+FROM vw_master
+WHERE Gender = 'male'
+GROUP BY Race
+ORDER BY Total_Views DESC;
