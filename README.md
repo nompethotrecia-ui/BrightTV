@@ -5,13 +5,10 @@
 
 BrightTV aims to grow its subscription base within the current financial year. However, limited insights into user behavior, content preferences, and viewing patterns make it challenging for the Customer Value Management (CVM) team to implement effective growth strategies.
 
----
 
 ## Aim of the Project
 
 To analyze user profiles and viewership data in order to generate actionable insights that support increased content consumption and subscriber growth.
-
----
 
 ## Objectives
 
@@ -30,15 +27,10 @@ To analyze user profiles and viewership data in order to generate actionable ins
 * Lower consumption periods present opportunities for targeted content strategies and promotions.
 * Insights suggest that personalized recommendations and strategic content scheduling can improve overall engagement and subscriptions.
 
----
-
 ## Tools Used
 
 * **Power BI** – Data visualization and dashboard creation
 * **SQL** – Data extraction, transformation, and querying
 * **Excel** – Data cleaning and preprocessing
 
----
-
-If you want, I can also **add screenshots of your Power BI dashboard** or make it look more advanced with badges and visuals.
 
